@@ -9,7 +9,10 @@
             "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
+                "CMAKE_CXX_COMPILER": "cl.exe",
+                "CMAKE_TOOLCHAIN_FILE": {
+                  "value": "C:/Users/matth/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                }
             },
             "condition": {
                 "type": "equals",
@@ -26,6 +29,9 @@
                 "strategy": "external"
             },
             "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": {
+                  "value": "C:/Users/matth/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                },
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
@@ -34,6 +40,9 @@
             "displayName": "x64 Release",
             "inherits": "x64-debug",
             "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": {
+                  "value": "C:/Users/matth/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                },
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
@@ -46,6 +55,9 @@
                 "strategy": "external"
             },
             "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": {
+                  "value": "C:/Users/matth/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                },
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
@@ -54,6 +66,9 @@
             "displayName": "x86 Release",
             "inherits": "x86-debug",
             "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": {
+                  "value": "C:/Users/matth/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                },
                 "CMAKE_BUILD_TYPE": "Release"
             }
         }

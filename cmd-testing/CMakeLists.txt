@@ -5,6 +5,9 @@
 # Add source to this project's executable.
 add_executable (cmd-testing "cmd-testing.cpp" "cmd-testing.h")
 
+find_package(fmt CONFIG REQUIRED)
+target_link_libraries(cmd-testing PRIVATE fmt::fmt)
+
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET cmd-testing PROPERTY CXX_STANDARD 20)
 endif()
