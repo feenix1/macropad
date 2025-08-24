@@ -1,6 +1,7 @@
 // cmd-testing.cpp : Defines the entry point for the application.
 //
 
+#include <Windows.h>
 #include <fmt/core.h> 
 #include <libremidi/libremidi.hpp>
 #include <iostream>
