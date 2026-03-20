@@ -1,0 +1,20 @@
+.button {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 0.25em;
+    font: inherit;
+    color: inherit;
+    background-color: #0f0f0f98;
+}
+
+.button:hover {
+  background-color: #181818;
+}
+
+.button:active {
+  border-color: #396cd8;
+  background-color: #0f0f0f69;
+}

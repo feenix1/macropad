@@ -1,11 +1,11 @@
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+:root { 
+  font: Inter, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: #f6f6f6;
+  background-color: #0c0c0c;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,6 +15,10 @@
 
   height: 100%;
   overflow: hidden;
+
+  --border-color: #1b1b1b;
+  --button-hover-color: #1b1b1b;
+  --button-active-color: #0f0f0f69;
 }
 
 /* stupid, :root is html element, #root is a div inside body */
@@ -39,10 +43,21 @@ body {
 }
 
 .tab-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background-color: #20202098;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-button {
+  border: none;
+  background-color: transparent;
   display: flex;
-  flex-direction: row;
+  align-items: center;
   justify-content: center;
-  gap: 1em;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
 }
 
 .tab-content {
@@ -65,60 +80,24 @@ a {
 }
 
 a:hover {
-  color: #535bf2;
+  color: #24c8db;
 }
 
 h1 {
   text-align: center;
 }
 
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
 
-button {
-  cursor: pointer;
+input {
+  outline: none;
+  color: #ffffff;
+  background-color: #0f0f0f98;
 }
 
 button:hover {
-  border-color: #396cd8;
+  background-color: var(--button-hover-color);
 }
+
 button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #1f1f1f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
+  background-color: var(--button-active-color)
 }

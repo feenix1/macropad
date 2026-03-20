@@ -12,7 +12,7 @@
     height: 100%;
     width: 25%;
     min-width: 200px;
-    background-color: aqua;
+    border-right: 1px solid var(--border-color);
 }
 
 .action-list-item {

@@ -1,4 +1,6 @@
 import "./ActionEditor.css";
+import IconButton from "../../components/IconButton";
+import { FaTrash } from "react-icons/fa6";
 
 function ActionEditor() {
   return (
@@ -22,7 +24,7 @@ function ActionListItem({ }) {
   return (
     <div className="action-list-item">
       <p>Action Name</p>
-      <button>Delete</button>
+      <IconButton icon={<FaTrash />} onClick={() => null}/>
     </div>
   )
 }

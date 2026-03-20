@@ -1,0 +1,27 @@
+.icon-button {
+    border: none;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 0.25em;
+    color: inherit;
+}
+
+.icon-button:hover {
+    background-color: transparent;
+    transition: opacity 0.1s ease-in-out;
+    opacity: 0.8;
+}
+
+.icon-button:active {
+    background-color: transparent;
+    transition: opacity 0.1s ease-in-out;
+    opacity: 0.6;
+}
+
+.icon-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}

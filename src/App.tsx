@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import Button from "./components/Button";
 import "./App.css";
 import ActionEditor from "./views/action-editor/ActionEditor";
 
@@ -27,9 +27,9 @@ function App() {
   return (
     <main className="container">
       <div className="tab-bar">
-        <button onClick={() => setCurrentTab(Tab.ActionEditor)}>Action Editor</button>
-        <button onClick={() => setCurrentTab(Tab.LightingEditor)}>Lighting Editor</button>
-        <button onClick={() => setCurrentTab(Tab.MappingEditor)}>Mapping Editor</button>
+        <button className="tab-button" onClick={() => setCurrentTab(Tab.ActionEditor)}>Action Editor</button>
+        <button className="tab-button" onClick={() => setCurrentTab(Tab.LightingEditor)}>Lighting Editor</button>
+        <button className="tab-button" onClick={() => setCurrentTab(Tab.MappingEditor)}>Mapping Editor</button>
       </div>
       <div className="tab-content">
         {renderCurrentTab(currentTab)}
