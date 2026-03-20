@@ -1,0 +1,24 @@
+.action-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+    height: 100%;
+}
+
+.action-list {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 25%;
+    min-width: 200px;
+    background-color: aqua;
+}
+
+.action-list-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+}
