@@ -16,8 +16,6 @@ function App() {
     MappingEditor
   } 
 
-  const [currentTab, setCurrentTab] = useState<Tab>(Tab.ActionEditor);
-
   function renderCurrentTab(currentTab: Tab) {
     switch (currentTab) {
       case Tab.ActionEditor:
@@ -31,25 +29,36 @@ function App() {
 
   return (
     <main className="container">
-      <div className="tab-bar">
-        <button className="tab-button" onClick={() => setCurrentTab(Tab.ActionEditor)}>
-          <AiOutlineSisternode size={24} />
-          Actions
-        </button>
-        <button className="tab-button" onClick={() => setCurrentTab(Tab.LightingEditor)}>
-          <HiSun size={24} />
-          Lighting
-        </button>
-        <button className="tab-button" onClick={() => setCurrentTab(Tab.MappingEditor)}>
-          <HiViewGridAdd size={24} />
-          Mapping
-        </button>
+      <div className="navbar">
+        <button className="navbar-button"></button>
+        <button className="navbar-button"></button>
       </div>
-      <div className="tab-content">
-        {renderCurrentTab(currentTab)}
+      <div className="pad-panel">
+        <div className="pad-container">
+          {[...Array(64)].map((_, i) => <PadButton key={i} />)}
+        </div>
+      </div>
+      <div className="configure-panel">
+        <h1>Configure Pad</h1>
+        <p>Label</p>
+        <input type="text" />
+        <p>Input Type</p>
+        <select name="input-type" id="input-type">
+          <option value="key">Key</option>
+          <option value="macro">Macro</option>
+          <option value="shortcut">Shortcut</option>
+        </select>
       </div>
     </main>
   );
+}
+
+function PadButton() {
+  return(
+    <button className="pad-button">
+      <p>Pad Name</p>
+    </button>
+  )
 }
 
 export default App;
