@@ -1,10 +1,13 @@
+@import "@fontsource-variable/instrument-sans/wdth.css";
+
 :root { 
-  font: Inter, Helvetica, Arial, sans-serif;
-  font-size: 16px;
+  font-family: "Instrument Sans Variable", Helvetica, Arial, sans-serif;
+  font-size: 12px;
   line-height: 24px;
   font-weight: 400;
 
   color: #f6f6f6;
+  --text-secondary: #c1c1c1;
   background-color: #0c0c0c;
 
   font-synthesis: none;
@@ -55,9 +58,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   cursor: pointer;
   color: inherit;
   font: inherit;
+  padding: 1rem;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .tab-content {

@@ -23,8 +23,12 @@ function ActionList() {
 function ActionListItem({ }) {
   return (
     <div className="action-list-item">
-      <p>Action Name</p>
-      <IconButton icon={<FaTrash />} onClick={() => null}/>
+        <div className="action-li-left">
+          <p className="action-li-title">Action Name</p>
+        </div>
+        <div className="action-li-right">
+          <IconButton icon={<FaTrash />} onClick={() => null}/>
+        </div>
     </div>
   )
 }

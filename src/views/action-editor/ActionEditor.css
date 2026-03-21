@@ -20,5 +20,25 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+}
 
+.action-li-left {
+    display: flex;
+    align-items: flex-start;
+    padding-left: 1rem;
+    flex-grow: 9;
+}
+
+.action-li-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.action-li-title {
+    display: inline;
+    font-size: 9px;
+    font-weight: 400;
+    color: var(--text-secondary);
 }
