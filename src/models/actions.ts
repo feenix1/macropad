@@ -1,8 +1,8 @@
 export default class Action {
-    actionName: string
+    id: string
     // action_id: figure out later
 
-    constructor(actionName: string) {
-        this.actionName = actionName
+    constructor(id: string) {
+        this.id = id
     }
 }

@@ -10,6 +10,7 @@
   --text-secondary: #c1c1c1;
   background-color: #0c0c0c;
   --background-secondary: #101010;
+  --accent-color: #ffd500;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -93,6 +94,11 @@ body {
   width: 100%;
   border: none;
   overflow: ellipsis;
+  transition: border 0.1s ease-in-out;
+}
+
+.pad-button-selected {
+  border: 2px solid var(--border-color);
 }
 
 .pad-button p {

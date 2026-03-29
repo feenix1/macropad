@@ -1,31 +1,11 @@
 import { useState } from "react";
 import Button from "./components/Button";
 import "./App.css";
-import ActionEditor from "./views/action-editor/ActionEditor";
 import "@fontsource-variable/instrument-sans/wdth.css"
-
-import { AiOutlineSisternode } from "react-icons/ai";
-import { HiViewGridAdd } from "react-icons/hi";
-import { HiSun } from "react-icons/hi2";
+import Pad from "./models/pad";
 
 function App() {
-
-  enum Tab {
-    ActionEditor,
-    LightingEditor,
-    MappingEditor
-  } 
-
-  function renderCurrentTab(currentTab: Tab) {
-    switch (currentTab) {
-      case Tab.ActionEditor:
-        return <ActionEditor />;
-      case Tab.LightingEditor:
-        return <div />;
-      case Tab.MappingEditor:
-        return <div />;
-    }
-  }
+  const [pads, setPads] = useState<Pad[]>([...Array(64)].map((_, i) => new Pad(`Pad ${i + 1}`)));
 
   return (
     <main className="container">
@@ -34,9 +14,7 @@ function App() {
         <button className="navbar-button"></button>
       </div>
       <div className="pad-panel">
-        <div className="pad-container">
-          {[...Array(64)].map((_, i) => <PadButton key={i} />)}
-        </div>
+        <PadContainer pads={pads}/>
       </div>
       <div className="configure-panel">
         <h1>Configure Pad</h1>
@@ -53,9 +31,20 @@ function App() {
   );
 }
 
-function PadButton() {
+function PadContainer({pads}: {pads: Pad[]}) {
+
+  return (
+    <div className="pad-container">
+      {pads.map((pad, i) => <PadButton key={i} selected={pad.selected} />)}
+    </div>
+  )
+}
+
+function PadButton({onClick, selected}: {onClick: () => void, selected: boolean}) {
+
+  const className = selected ? "pad-button pad-button-selected" : "pad-button"
   return(
-    <button className="pad-button">
+    <button className={className} onClick={onClick}>
       <p>Pad Name</p>
     </button>
   )
