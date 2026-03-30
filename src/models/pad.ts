@@ -1,9 +1,9 @@
 export default class Pad {
-    actionName: string
+    padId: number
     selected = false
-    // action_id: figure out later
+    label: string = ""
 
-    constructor(actionName: string) {
-        this.actionName = actionName
+    constructor(padId: number) {
+        this.padId = padId;
     }
 }

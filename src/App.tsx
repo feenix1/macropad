@@ -5,7 +5,18 @@ import "@fontsource-variable/instrument-sans/wdth.css"
 import Pad from "./models/pad";
 
 function App() {
-  const [pads, setPads] = useState<Pad[]>([...Array(64)].map((_, i) => new Pad(`Pad ${i + 1}`)));
+  const [pads, setPads] = useState<Pad[]>([...Array(64)].map((_, i) => new Pad(i)));
+
+  function selectPad(index: number) {
+    setPads(pads.map((pad, i) => {
+      if (i != index) {
+        pad.selected = false;
+        return pad;
+      }
+      pad.selected = true;
+      return pad;
+    }));
+  }
 
   return (
     <main className="container">
@@ -14,38 +25,38 @@ function App() {
         <button className="navbar-button"></button>
       </div>
       <div className="pad-panel">
-        <PadContainer pads={pads}/>
+        <div className="pad-container">
+          {pads.map((pad, i) => <PadButton key={i} pad={pad} onClick={selectPad} />)}
+        </div>
       </div>
       <div className="configure-panel">
         <h1>Configure Pad</h1>
-        <p>Label</p>
-        <input type="text" />
-        <p>Input Type</p>
-        <select name="input-type" id="input-type">
-          <option value="key">Key</option>
-          <option value="macro">Macro</option>
-          <option value="shortcut">Shortcut</option>
-        </select>
+        <div>
+          <p>Label</p>
+          <input type="text" />
+        </div>
+        <div>
+          <p>Input Type</p>
+          <select name="input-type" id="input-type">
+            <option value="key">Key</option>
+            <option value="macro">Macro</option>
+            <option value="shortcut">Shortcut</option>
+          </select>
+        </div>
       </div>
     </main>
   );
 }
 
-function PadContainer({pads}: {pads: Pad[]}) {
+function PadButton({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
+  const className = pad.selected ? "pad-button pad-button-selected" : "pad-button"
 
-  return (
-    <div className="pad-container">
-      {pads.map((pad, i) => <PadButton key={i} selected={pad.selected} />)}
-    </div>
-  )
-}
+  function handleClick() {
+    onClick(pad.padId);
+  }
 
-function PadButton({onClick, selected}: {onClick: () => void, selected: boolean}) {
-
-  const className = selected ? "pad-button pad-button-selected" : "pad-button"
   return(
-    <button className={className} onClick={onClick}>
-      <p>Pad Name</p>
+    <button className={className} onClick={handleClick}>
     </button>
   )
 }

@@ -4,12 +4,15 @@
   font-family: "Instrument Sans Variable", Helvetica, Arial, sans-serif;
   font-size: 12px;
   line-height: 24px;
-  font-weight: 400;
+  font-weight: 500;
 
   color: #f6f6f6;
-  --text-secondary: #c1c1c1;
+  --text-secondary: #707070;
   background-color: #0c0c0c;
   --background-secondary: #101010;
+  --background-tiertiary: #232323;
+  --background-tiertiary-hover: #2b2b2b;
+  --background-tiertiary-outline: #353535;
   --accent-color: #ffd500;
 
   font-synthesis: none;
@@ -20,10 +23,6 @@
 
   height: 100%;
   overflow: hidden;
-
-  --border-color: #1b1b1b;
-  --button-hover-color: #1b1b1b;
-  --button-active-color: #0f0f0f69;
 }
 
 /* stupid, :root is html element, #root is a div inside body */
@@ -43,7 +42,6 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  text-align: center;
   height: 100%;
 }
 
@@ -69,17 +67,16 @@ body {
   justify-content: center;
   align-items: center;
   flex-grow: 1;
-  padding: 128px;
   background-color: inherit;
 }
 
 .pad-container {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(8, 1fr);
+  grid-template-columns: repeat(8, 50px);
+  grid-template-rows: repeat(8, 50px);
   gap: 6px;
   aspect-ratio: 1 / 1;
-  width: 100%;
+  text-align: left;
 }
 
 .pad-button {
@@ -87,18 +84,17 @@ body {
   justify-content: center;
   align-items: center;
   color: var(--text-secondary);
-  background-color: var(--background-secondary);
+  background-color: var(--background-tiertiary);
   border-radius: 4px;
   cursor: pointer;
   height: 100%;
   width: 100%;
   border: none;
   overflow: ellipsis;
-  transition: border 0.1s ease-in-out;
 }
 
 .pad-button-selected {
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--accent-color);
 }
 
 .pad-button p {
@@ -112,11 +108,25 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  align-items: left;
   gap: 12px;
-  padding-top: 24px;
+  padding: 24px;
   height: 100%;
+  min-width: 300px;
   background-color: var(--background-secondary);
-  flex-grow: 1;
+}
+
+.configure-panel h1 {
+  font-size: 24px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.configure-panel p {
+  margin: 0;
+  padding: 0;
+  font-weight: medium;
+  color: var(--text-secondary);
 }
 
 .row {
@@ -141,15 +151,15 @@ h1 {
 
 input {
   outline: none;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--background-tiertiary-outline);
+  border-radius: 5px;
   color: inherit;
-  background-color: #0f0f0f98;
+  background-color: var(--background-tiertiary);
+  font-size: 16px;
+  font: inherit;
+  padding: 3px 6px;
 }
 
 button:hover {
-  background-color: var(--button-hover-color);
-}
-
-button:active {
-  background-color: var(--button-active-color)
+  background-color: var(--background-tiertiary-hover);
 }
