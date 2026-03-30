@@ -18,6 +18,14 @@ function App() {
     }));
   }
 
+  function getSelectedPad() {
+    return pads.find(pad => pad.selected);
+  }
+
+  function handleConfigUpdate(updatedPad: Pad) {
+    setPads(pads.map(pad => pad.padId === updatedPad.padId ? updatedPad : pad));
+  }
+
   return (
     <main className="container">
       <div className="navbar">
@@ -29,23 +37,54 @@ function App() {
           {pads.map((pad, i) => <PadButton key={i} pad={pad} onClick={selectPad} />)}
         </div>
       </div>
-      <div className="configure-panel">
-        <h1>Configure Pad</h1>
-        <div>
-          <p>Label</p>
-          <input type="text" />
-        </div>
-        <div>
-          <p>Input Type</p>
-          <select name="input-type" id="input-type">
-            <option value="key">Key</option>
-            <option value="macro">Macro</option>
-            <option value="shortcut">Shortcut</option>
-          </select>
-        </div>
-      </div>
+      <ConfigurePanel pad={getSelectedPad()} onConfigUpdate={handleConfigUpdate}/>
     </main>
   );
+}
+
+function ConfigurePanel(
+  {pad, onConfigUpdate} : 
+  {pad?: Pad, onConfigUpdate?: (pad: Pad) => void }
+) {
+
+  function handleConfigUpdate(updatedPad: Pad) {
+    onConfigUpdate?.(updatedPad);
+  }
+
+  return (
+    <div className="configure-panel">
+      <h1>Configure Pad</h1>
+      {pad ? <ConfigurePanelContent pad={pad} onConfigUpdate={handleConfigUpdate}/> : <p>No pad selected</p>}
+    </div>
+  )
+}
+
+function ConfigurePanelContent(
+  {pad, onConfigUpdate} : 
+  {pad: Pad, onConfigUpdate?: (pad: Pad) => void }
+) {
+
+  function handleChangeLabel(e: React.ChangeEvent<HTMLInputElement>) {
+    pad.label = e.target.value;
+    onConfigUpdate?.(pad);
+  }
+
+  return (
+    <>
+      <div>
+        <p>Label</p>
+        <input type="text" value={pad.label} onChange={handleChangeLabel} />
+      </div>
+      <div>
+        <p>Input Type</p>
+        <div className="input-types">
+          <button>Keybind</button>
+          <button>Soundboard</button>
+          <button>Command</button>
+        </div>
+      </div>
+    </>
+  )
 }
 
 function PadButton({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
@@ -57,6 +96,7 @@ function PadButton({pad, onClick}: {pad: Pad, onClick: (index: number) => void})
 
   return(
     <button className={className} onClick={handleClick}>
+      {pad.label}
     </button>
   )
 }
