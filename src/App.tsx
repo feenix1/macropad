@@ -3,6 +3,7 @@ import Button from "./components/Button";
 import "./App.css";
 import "@fontsource-variable/instrument-sans/wdth.css"
 import Pad from "./models/pad";
+import { ActionType } from "./models/action-type";
 
 function App() {
   const [pads, setPads] = useState<Pad[]>([...Array(64)].map((_, i) => new Pad(i)));
@@ -69,6 +70,11 @@ function ConfigurePanelContent(
     onConfigUpdate?.(pad);
   }
 
+  function handleChangeActionType(actionType: ActionType) {
+    pad.actionType = actionType;
+    onConfigUpdate?.(pad);
+  }
+
   return (
     <>
       <div>
@@ -78,9 +84,9 @@ function ConfigurePanelContent(
       <div>
         <p>Input Type</p>
         <div className="input-types">
-          <button>Keybind</button>
-          <button>Soundboard</button>
-          <button>Command</button>
+          <button onClick={() => handleChangeActionType(ActionType.Keybind)}>Keybind</button>
+          <button onClick={() => handleChangeActionType(ActionType.Soundboard)}>Soundboard</button>
+          <button onClick={() => handleChangeActionType(ActionType.Command)}>Command</button>
         </div>
       </div>
     </>
