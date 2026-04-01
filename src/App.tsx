@@ -1,15 +1,18 @@
-import { createContext, useState } from "react";
+import { createContext, SetStateAction, useContext, useState } from "react";
 import "./App.css";
 import "@fontsource-variable/instrument-sans/wdth.css"
 import Pad from "./models/pad";
 import { ActionType } from "./models/action-type";
-import AppData from "./models/app-data";
+import Launchpad from "./models/launchpad";
 
-const AppContext = createContext(new AppData());
+const LaunchpadContext = createContext<[Launchpad, React.Dispatch<SetStateAction<Launchpad>>]>(null as any);
 
 function App() {
+  const [launchpad, setLaunchpad] = useState<Launchpad>(new Launchpad());
+  const [selectedPad, setSelectedPad] = useState<Pad>(undefined);
+
   return (
-    <AppContext>
+    <LaunchpadContext.Provider value={[launchpad, setLaunchpad]}>
       <main className="container">
         <div className="navbar">
           <button className="navbar-button"></button>
@@ -17,66 +20,43 @@ function App() {
         </div>
         <div className="pad-panel">
           <div className="pad-container">
-            {pads.map((pad, i) => <PadButtonGridSquare key={i} pad={pad} onClick={selectPad} />)}
+            {launchpad.gridPads.map((pad, i) => <PadGridButtonSquare key={i} pad={pad} onClick={selectPad} />)}
           </div>
         </div>
-        <ConfigurePanel pad={getSelectedPad()} onConfigUpdate={handleConfigUpdate}/>
+        <ConfigurePanel/>
       </main>
-    </AppContext>
+    </LaunchpadContext.Provider>
   );
 }
 
-function ConfigurePanel(
-  {pad, onConfigUpdate} : 
-  {pad?: Pad, onConfigUpdate?: (pad: Pad) => void }
-) {
-
-  function handleConfigUpdate(updatedPad: Pad) {
-    onConfigUpdate?.(updatedPad);
-  }
+function ConfigurePanel({selectedPad, on}) {
 
   return (
     <div className="configure-panel">
       <h1>Configure Pad</h1>
-      {pad ? <ConfigurePanelContent pad={pad} onConfigUpdate={handleConfigUpdate}/> : <p>No pad selected</p>}
+      {
+      selectedPad ? 
+      <>
+        <div>
+          <p>Label</p>
+          <input type="text" value={selectedPad.label} onChange={handleChangeLabel} />
+        </div>
+        <div>
+          <p>Input Type</p>
+          <div className="input-types">
+            <button onClick={() => handleChangeActionType(ActionType.Keybind)}>Keybind</button>
+            <button onClick={() => handleChangeActionType(ActionType.Soundboard)}>Soundboard</button>
+            <button onClick={() => handleChangeActionType(ActionType.Command)}>Command</button>
+          </div>
+        </div>
+      </>
+      : <p>No pad selected</p>}
     </div>
   )
 }
 
-function ConfigurePanelContent(
-  {pad, onConfigUpdate} : 
-  {pad: Pad, onConfigUpdate?: (pad: Pad) => void }
-) {
 
-  function handleChangeLabel(e: React.ChangeEvent<HTMLInputElement>) {
-    pad.label = e.target.value;
-    onConfigUpdate?.(pad);
-  }
-
-  function handleChangeActionType(actionType: ActionType) {
-    pad.actionType = actionType;
-    onConfigUpdate?.(pad);
-  }
-
-  return (
-    <>
-      <div>
-        <p>Label</p>
-        <input type="text" value={pad.label} onChange={handleChangeLabel} />
-      </div>
-      <div>
-        <p>Input Type</p>
-        <div className="input-types">
-          <button onClick={() => handleChangeActionType(ActionType.Keybind)}>Keybind</button>
-          <button onClick={() => handleChangeActionType(ActionType.Soundboard)}>Soundboard</button>
-          <button onClick={() => handleChangeActionType(ActionType.Command)}>Command</button>
-        </div>
-      </div>
-    </>
-  )
-}
-
-function PadButtonControl({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
+function PadControlButton({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
   const className = pad.selected ? "pad-button pad-button-selected" : "pad-button"
 
   function handleClick() {
@@ -90,7 +70,7 @@ function PadButtonControl({pad, onClick}: {pad: Pad, onClick: (index: number) =>
   )
 }
 
-function PadButtonGridSquare({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
+function PadGridButtonSquare({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
   const className = pad.selected ? "pad-button pad-button-selected" : "pad-button"
 
   function handleClick() {
@@ -104,7 +84,7 @@ function PadButtonGridSquare({pad, onClick}: {pad: Pad, onClick: (index: number)
   )
 }
 
-function PadButtonGridRound({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
+function PadGridButtonRound({pad, onClick}: {pad: Pad, onClick: (index: number) => void}) {
   const className = pad.selected ? "pad-button pad-button-selected" : "pad-button"
 
   function handleClick() {
