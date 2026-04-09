@@ -1,14 +1,49 @@
 use std::{error, vec};
-
-use launchy::{MidiError, OutputDevice, launchpad_mini::{Button, Color, Input, Output, DoubleBufferingBehavior}};
+use std::sync::Mutex;
+use launchy::{InputDevice, OutputDevice};
+use tauri::{State};
+use launchy::{launchpad_mini::{Button, Color, Input, Output, DoubleBufferingBehavior}};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![set_control_button_color])
+        .invoke_handler(tauri::generate_handler![launchpad_connected])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+struct LaunchpadState{
+    output: Mutex<Option<Output>>,
+    input: Mutex<Option<Input>>,
+}
+
+impl LaunchpadState {
+    pub fn new() -> Self {
+        Self {
+            output: Mutex::new(None),
+            input: Mutex::new(None),
+        }
+    }
+}
+
+#[tauri::command]
+fn connect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
+    let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
+    let mut input_guard = state.input.lock().map_err(|e| e.to_string())?;
+
+    if output_guard.is_some() {
+        return Ok(());
+    }
+
+    let output = Output::guess().map_err(|e| e.to_string())?;
+    let input = Input::guess_polling().map_err(|e| e.to_string())?;
+
+    *output_guard = Some(output);
+    *input_guard = Some(input);
+    
+    Ok(())
 }
 
 fn string_to_color(color_str: &str) -> Result<Color, &str> {
@@ -24,15 +59,3 @@ fn string_to_color(color_str: &str) -> Result<Color, &str> {
         _ => Err("Invalid color string!")
     } 
 }
-
-#[tauri::command]
-fn set_control_button_color(index: u8, color: String) -> Result<(), String> {
-    let mut output = Output::guess()
-        .map_err(|_| "MidiError")?;
-    let button = Button::ControlButton { index };
-    let color = string_to_color(color.as_str())?;
-    return Ok(output.set_button(button, color, DoubleBufferingBehavior::None)
-        .map_err(|_| "MidiError")?);
-}
-
-// fn set_grid_button_color(x: u8, y: u8, color: String) 
