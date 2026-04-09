@@ -15,6 +15,15 @@
   --background-tiertiary-outline: #353535;
   --accent-color: #ffd500;
 
+  --off: var(--background-tiertiary);
+  --red: #fc6c53;
+  --green: #67b33c; 
+  --amber: #ffd21c;
+  --dim_green: #49802a;
+  --dim_red: #c95642;
+  --orange: #fd9c1b;
+  --yellow: #fbe14c;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -67,7 +76,16 @@ body {
   justify-content: center;
   align-items: center;
   flex-grow: 1;
+  flex-direction: column;
   background-color: inherit;
+  
+}
+
+.pad-panel-topinfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: calc(8 * 50px + 7 * 6px); /* width of pad container */
 }
 
 .pad-container {
@@ -94,7 +112,7 @@ body {
   text-overflow: wrap;
 }
 
-.pad-button-selected {
+.selected {
   outline: 1px solid var(--accent-color);
 }
 
@@ -123,6 +141,14 @@ body {
   color: var(--text-secondary);
 }
 
+.color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+}
+
 .row {
   display: flex;
   justify-content: center;
@@ -142,6 +168,12 @@ h1 {
   text-align: center;
 }
 
+h2 {
+  text-align: left;
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
 
 input {
   outline: none;
