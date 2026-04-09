@@ -1,6 +1,7 @@
 use std::{error, vec};
 use std::sync::Mutex;
-use launchy::{InputDevice, OutputDevice};
+use launchy::mini::Message;
+use launchy::{InputDevice, InputDeviceHandler, OutputDevice};
 use tauri::{State};
 use launchy::{launchpad_mini::{Button, Color, Input, Output, DoubleBufferingBehavior}};
 
@@ -8,15 +9,13 @@ use launchy::{launchpad_mini::{Button, Color, Input, Output, DoubleBufferingBeha
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![set_control_button_color])
-        .invoke_handler(tauri::generate_handler![launchpad_connected])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 struct LaunchpadState{
     output: Mutex<Option<Output>>,
-    input: Mutex<Option<Input>>,
+    input: Mutex<Option<InputDeviceHandler>>,
 }
 
 impl LaunchpadState {
@@ -33,17 +32,58 @@ fn connect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
     let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
     let mut input_guard = state.input.lock().map_err(|e| e.to_string())?;
 
+    // Connected to launchpad already
     if output_guard.is_some() {
         return Ok(());
     }
 
     let output = Output::guess().map_err(|e| e.to_string())?;
-    let input = Input::guess_polling().map_err(|e| e.to_string())?;
+    let input = Input::guess(input_callback).map_err(|e| e.to_string())?;
 
     *output_guard = Some(output);
     *input_guard = Some(input);
     
     Ok(())
+}
+
+#[tauri::command]
+fn disconnect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
+    let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
+    let mut input_guard = state.input.lock().map_err(|e| e.to_string())?;
+
+    *output_guard = None;
+    *input_guard = None;
+
+    Ok(())
+}
+
+#[tauri::command]
+fn is_connected(state: State<'_, LaunchpadState>) -> bool {
+    let output_guard = state.output.lock().unwrap();
+    output_guard.is_some()
+}
+
+fn input_callback(message: Message) {
+    match message {
+        Message::Press { button } => {
+            println!("Button pressed: {:?}", button);
+        },
+        Message::Release { button } => {
+            println!("Button released: {:?}", button);
+        },
+        _ => {}
+    }
+}
+
+#[tauri::command]
+fn light_pad(x: u8, y: u8, color: Color, state: State<'_, LaunchpadState>) -> Result<(), String> {
+    let output_guard = state.output.lock().map_err(|e| e.to_string())?;
+    if let Some(output) = output_guard.as_ref() {
+        output.set_button_color(Button::Grid { x, y }, color).map_err(|e| e.to_string())?;
+    } else {
+        return Err("Not connected to launchpad".to_string());
+    }
+  Ok(())
 }
 
 fn string_to_color(color_str: &str) -> Result<Color, &str> {
