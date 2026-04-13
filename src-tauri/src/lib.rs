@@ -1,14 +1,15 @@
-use std::{error, vec};
+use std::{vec};
 use std::sync::Mutex;
 use launchy::mini::Message;
 use launchy::{InputDevice, InputDeviceHandler, OutputDevice};
 use tauri::{State};
-use launchy::{launchpad_mini::{Button, Color, Input, Output, DoubleBufferingBehavior}};
+use launchy::{launchpad_mini::{Button, Color, Input, Output}};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![connect_launchpad, disconnect_launchpad, is_connected, light_grid_pad, light_control_pad])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -76,10 +77,23 @@ fn input_callback(message: Message) {
 }
 
 #[tauri::command]
-fn light_pad(x: u8, y: u8, color: Color, state: State<'_, LaunchpadState>) -> Result<(), String> {
-    let output_guard = state.output.lock().map_err(|e| e.to_string())?;
-    if let Some(output) = output_guard.as_ref() {
-        output.set_button_color(Button::Grid { x, y }, color).map_err(|e| e.to_string())?;
+fn light_grid_pad(x: u8, y: u8, color: &str, state: State<'_, LaunchpadState>) -> Result<(), String> {
+    let color = string_to_color(&color).map_err(|e| e.to_string())?;
+    let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
+    if let Some(output) = output_guard.as_mut() {
+        output.light(Button::GridButton { x, y }, color).map_err(|e| e.to_string())?;
+    } else {
+        return Err("Not connected to launchpad".to_string());
+    }
+  Ok(())
+}
+
+#[tauri::command]
+fn light_control_pad(index: u8, color: &str, state: State<'_, LaunchpadState>) -> Result<(), String> {
+    let color = string_to_color(&color).map_err(|e| e.to_string())?;
+    let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
+    if let Some(output) = output_guard.as_mut() {
+        output.light(Button::ControlButton { index }, color).map_err(|e| e.to_string())?;
     } else {
         return Err("Not connected to launchpad".to_string());
     }
