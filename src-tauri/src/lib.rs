@@ -9,6 +9,7 @@ use launchy::{launchpad_mini::{Button, Color, Input, Output}};
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .manage(LaunchpadState::new())
         .invoke_handler(tauri::generate_handler![connect_launchpad, disconnect_launchpad, is_connected, light_grid_pad, light_control_pad])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

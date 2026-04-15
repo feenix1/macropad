@@ -16,13 +16,13 @@
   --accent-color: #ffd500;
 
   --off: var(--background-tiertiary);
-  --red: #fc6c53;
-  --green: #67b33c; 
-  --amber: #ffd21c;
-  --dim_green: #49802a;
-  --dim_red: #c95642;
-  --orange: #fd9c1b;
-  --yellow: #fbe14c;
+  --red: #df2222;
+  --green: #8dcc33; 
+  --amber: #ffa012;
+  --dim_green: #73802a;
+  --dim_red: #830505;
+  --orange: #ff7300;
+  --yellow: #ffdd00;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -90,7 +90,7 @@ body {
 
 .pad-container {
   display: grid;
-  grid-template-columns: repeat(8, 50px);
+  grid-template-columns: repeat(9, 50px);
   grid-template-rows: repeat(8, 50px);
   gap: 6px;
   aspect-ratio: 1 / 1;

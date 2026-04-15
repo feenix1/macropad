@@ -1,19 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import "@fontsource-variable/instrument-sans/wdth.css"
-import Pad, { padColorToHex, padColorToCssVar, PadColor } from "./models/pad";
+import Pad, { padColorToCssVar, PadColor, GridPosition } from "./models/pad";
 import { ActionType } from "./models/action-type";
+import useLaunchpad from "./hooks/useLaunchpad";
 
 function App() {
-  const [gridPads, setGridPads] = useState(Array(8 * 8).fill(null).map(() => new Pad() ));
+  const [gridPads, setGridPads] = useState(Array(9 * 8).fill(null).map((_, i) => new Pad(new GridPosition(i % 9, Math.floor(i / 9)))));
   const [selectedPadIndex, setSelectedPadIndex] = useState<number | null>(null);
+  const launchpad = useLaunchpad();
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    async function connect() {
+      const success = await launchpad.connect();
+      console.log("Connected to launchpad:", success);
+      setIsConnected(success);
+    }
+    connect();
+  }, []);
+
+  useEffect(() => {
+    async function updatePadLights() {
+      for (let i = 0; i < gridPads.length; i++) {
+        const pad = gridPads[i];
+        if (pad.position instanceof GridPosition) {
+          await launchpad.lightGridPad(pad.position.x, pad.position.y, pad.color);
+        } else {
+          await launchpad.lightControlPad(pad.position.index, pad.color);
+        }
+      }
+    }
+    if (isConnected) {
+      updatePadLights();
+    }
+  }, [gridPads, isConnected]);
 
   function handlePadSelect(padIndex: number) {
     setSelectedPadIndex(padIndex);
   }
 
-  function handlePadUpdate(newPad: Pad) {
+  function handleConfigUpdate(newPad: Pad) {
     if (selectedPadIndex == null) {
+      console.warn("Config update called with no selected pad");
       return;
     }
     const newPads = [...gridPads];
@@ -42,18 +71,18 @@ function App() {
         <div className="pad-container">
           {
             gridPads.map((_, i) => {
-              return <PadGridButton key={i} pads={gridPads} padIndex={i} selected={i === selectedPadIndex} onClick={handlePadSelect} />
+              return <PadButton key={i} pads={gridPads} padIndex={i} selected={i === selectedPadIndex} round={i % 9 == 8} onClick={handlePadSelect} />
             })
           }
         </div>
       </div>
-      <ConfigurePanel selectedPad={getSelectedPad()} onConfigUpdate={handlePadUpdate}/>
+      <ConfigurePanel selectedPad={getSelectedPad()} onConfigUpdate={handleConfigUpdate}/>
     </main>
   );
 }
 
-function PadGridButton({pads, padIndex, selected, onClick}: {pads: Pad[], padIndex: number, selected: boolean, onClick?: (padIndex: number) => void}) {
-  const className = selected ? "pad-button selected" : "pad-button"
+function PadButton({pads, padIndex, selected, round, onClick}: {pads: Pad[], padIndex: number, selected: boolean, round: boolean, onClick?: (padIndex: number) => void}) {
+  const className = `pad-button ${selected ? "selected" : ""} ${round ? "round" : ""}`;
   
   function getPad(): Pad {
     return pads[padIndex];
@@ -83,6 +112,9 @@ function ConfigurePanel({selectedPad, onConfigUpdate}: {selectedPad: Pad | null,
       onConfigUpdate(newPad);
     }
   }
+  function handleKeybindDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+  }
   return (
     <div className="configure-panel">
       <h1>Configure Pad</h1>
@@ -111,6 +143,10 @@ function ConfigurePanel({selectedPad, onConfigUpdate}: {selectedPad: Pad | null,
                 })
               }
             </div>
+          </div>
+          <div>
+            <p>Keybind</p>
+            <input type="text" name="keybind" id="keybind" onKeyDown={handleKeybindDown} />
           </div>
         </>
         : <p>No pad selected</p>

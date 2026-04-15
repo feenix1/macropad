@@ -2,33 +2,31 @@ import { ActionType } from "./action-type";
 
 export default class Pad {
     color: PadColor
-
+    position: GridPosition | ControlPosition
     selected = false
     label: string = ""
     actionType: ActionType = ActionType.None
     
-    constructor() {
+    constructor(position: GridPosition | ControlPosition) {
         this.color = PadColor.OFF;
+        this.position = position;
     }
 }
 
-export class ControlPad extends Pad {
-    index: number
-
+export class ControlPosition {
+    index: number;
     constructor(index: number) {
-        super();
-        this.index = index;
+        this.index = index; 
     }
 }
 
-export class GridPad extends Pad {
-    x: number
-    y: number
+export class GridPosition {
+    x: number;
+    y: number;
 
     constructor(x: number, y: number) {
-        super()
-        this.x = x;
-        this.y = y;
+       this.x = x;
+       this.y = y; 
     }
 }
 
@@ -52,19 +50,19 @@ export function padColorToHex(padColor: PadColor) {
         case PadColor.OFF:
             return "#000000";
         case PadColor.RED:
-            return "#fc6c53"
+            return "#df2222"
         case PadColor.GREEN:
-            return "#67b33c"
+            return "#8dcc33"
         case PadColor.AMBER:
-            return "#ffd21c"
+            return "#ffa012"
         case PadColor.DIM_GREEN:
-            return "#49802a"
+            return "#73802a"
         case PadColor.DIM_RED:
-            return "#c95642"
+            return "#830505"
         case PadColor.ORANGE:
-            return "#fd9c1b"
+            return "#ff7300"
         case PadColor.YELLOW:
-            return "#fbe14c"
+            return "#ffaa00"
         default:
             return "#000000"
     }
