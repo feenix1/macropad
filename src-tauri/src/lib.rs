@@ -1,5 +1,5 @@
 use std::{vec};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use launchy::mini::Message;
 use launchy::{InputDevice, InputDeviceHandler, OutputDevice};
 use tauri::{State};
@@ -16,15 +16,15 @@ pub fn run() {
 }
 
 struct LaunchpadState{
-    output: Mutex<Option<Output>>,
-    input: Mutex<Option<InputDeviceHandler>>,
+    output: Arc<Mutex<Option<Output>>>,
+    input: Arc<Mutex<Option<InputDeviceHandler>>>,
 }
 
 impl LaunchpadState {
     pub fn new() -> Self {
         Self {
-            output: Mutex::new(None),
-            input: Mutex::new(None),
+            output: Arc::new(Mutex::new(None)),
+            input: Arc::new(Mutex::new(None)),
         }
     }
 }
@@ -35,7 +35,21 @@ fn connect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
     let mut input_guard = state.input.lock().map_err(|e| e.to_string())?;
 
     let mut output = Output::guess().map_err(|e| e.to_string())?;
-    let input = Input::guess(input_callback).map_err(|e| e.to_string())?;
+    let output_clone = Arc::clone(&state.output);
+    let input = Input::guess(move |message| {
+        match message {
+            Message::Press { button } => {
+                println!("Button pressed: {:?}", button);
+                output_clone.lock().unwrap().as_mut().map(|output| {
+                    output.light(button, Color::YELLOW).ok();
+                });
+            },
+            Message::Release { button } => {
+                println!("Button released: {:?}", button);
+            },
+            _ => {}
+        }
+    }).map_err(|e| e.to_string())?;
 
     if !output.request_device_inquiry(launchy::s::DeviceIdQuery::Any).is_ok() {
         *output_guard = None;
@@ -75,15 +89,6 @@ fn is_connected(state: State<'_, LaunchpadState>) -> bool {
 }
 
 fn input_callback(message: Message) {
-    match message {
-        Message::Press { button } => {
-            println!("Button pressed: {:?}", button);
-        },
-        Message::Release { button } => {
-            println!("Button released: {:?}", button);
-        },
-        _ => {}
-    }
 }
 
 #[tauri::command]
