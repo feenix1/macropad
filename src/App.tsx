@@ -12,12 +12,31 @@ function App() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    async function connect() {
-      const success = await launchpad.connect();
-      console.log("Connected to launchpad:", success);
-      setIsConnected(success);
+    async function connectAndHeartbeat() {
+      while (true) {
+        const success = await launchpad.connect();
+        if (!success) {
+          setIsConnected(false);
+          console.warn("Failed to connect to launchpad, retrying in 5 seconds...");
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
+        }
+        console.log("Connected to launchpad:", success);
+        setIsConnected(success);
+        while (true) {
+          const heartbeatSuccess = await launchpad.isConnected();
+          console.log("Launchpad connected poll:", heartbeatSuccess);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          if (!heartbeatSuccess) {
+            setIsConnected(false);
+            launchpad.disconnect();
+            console.warn("Launchpad connection lost, attempting to reconnect...");
+            break;
+          }
+        }
+      }
     }
-    connect();
+    connectAndHeartbeat();
   }, []);
 
   useEffect(() => {
@@ -66,7 +85,11 @@ function App() {
       <div className="pad-panel">
         <div className="pad-panel-topinfo">
           <h2>Launchpad Mini MK2</h2>
-          <p>Disconnected</p>
+          <p>
+            {
+              isConnected ? "Connected" : "Disconnected"
+            }
+          </p>
         </div>
         <div className="pad-container">
           {

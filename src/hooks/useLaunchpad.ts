@@ -11,27 +11,55 @@ export interface LaunchpadConnection {
 
 export default function useLaunchpad() : LaunchpadConnection {
     async function isConnected() : Promise<boolean> {
-        return await invoke('is_connected')
+        try {
+            const connected: boolean = await invoke("is_connected");
+            console.log("isConnected: " + connected);
+            return connected;
+            
+        } catch (error) {
+            console.error("isConnected: " + error);
+            return false; 
+        }
     }
 
     async function connect() : Promise<boolean> {
-        const err_string = await invoke('connect_launchpad');
-        return err_string == null;
+        try {
+            await invoke('connect_launchpad')
+        } catch (error) {
+            console.error("connect: " + error)
+            return false; 
+        }
+        return true;
     }
 
     async function disconnect() {
-        const err_string = await invoke('disconnect_launchpad');
-        return err_string == null;
+        try {
+            await invoke('disconnect_launchpad')
+        } catch (error) {
+            console.error("disconnect: " + error)
+            return false; 
+        }
+        return true;
     }
 
     async function lightControlPad(index: number, padColor: PadColor) {
-        const err_string = await invoke('light_grid_pad', {index: index, color: padColor.toString()})
-        return err_string == null;
+        try {
+            await invoke('light_control_pad', {index: index, color: padColor.toString()});
+        } catch (error) {
+            console.error("lightControlPad: " + error);
+            return false; 
+        }
+        return true;
     }
 
     async function lightGridPad(x: number, y: number, padColor: PadColor){
-        const err_string = await invoke('light_grid_pad', {x: x, y: y, color: padColor.toString()})
-        return err_string == null;
+        try {
+            await invoke('light_grid_pad', {x: x, y: y, color: padColor.toString()});
+        } catch (error) {
+            console.error("lightGridPad: " + error);
+            return false; 
+        }
+        return true;
     }
 
     return {

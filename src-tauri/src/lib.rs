@@ -34,17 +34,18 @@ fn connect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
     let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
     let mut input_guard = state.input.lock().map_err(|e| e.to_string())?;
 
-    // Connected to launchpad already
-    if output_guard.is_some() {
-        return Ok(());
-    }
-
-    let output = Output::guess().map_err(|e| e.to_string())?;
+    let mut output = Output::guess().map_err(|e| e.to_string())?;
     let input = Input::guess(input_callback).map_err(|e| e.to_string())?;
+
+    if !output.request_device_inquiry(launchy::s::DeviceIdQuery::Any).is_ok() {
+        *output_guard = None;
+        *input_guard = None;
+        return Err("Failed to connect to launchpad".to_string());
+    }
 
     *output_guard = Some(output);
     *input_guard = Some(input);
-    
+
     Ok(())
 }
 
@@ -61,8 +62,16 @@ fn disconnect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> 
 
 #[tauri::command]
 fn is_connected(state: State<'_, LaunchpadState>) -> bool {
-    let output_guard = state.output.lock().unwrap();
-    output_guard.is_some()
+    let mut output_guard = match state.output.lock() {
+        Ok(guard) => guard,
+        Err(_) => return false, // If we can't acquire the lock, assume not connected
+    };
+    let output = output_guard.as_mut();
+    if let Some(output) = output {
+        output.request_device_inquiry(launchy::s::DeviceIdQuery::Any).is_ok()
+    } else {
+        false
+    }
 }
 
 fn input_callback(message: Message) {
