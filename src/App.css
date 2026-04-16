@@ -112,8 +112,13 @@ body {
   text-overflow: wrap;
 }
 
+.round {
+  border-radius: 50%;
+}
+
 .selected {
   outline: 1px solid var(--accent-color);
+  outline-offset: -1px;
 }
 
 .configure-panel {
@@ -139,6 +144,11 @@ body {
   padding: 0;
   font-weight: medium;
   color: var(--text-secondary);
+}
+
+.color-options {
+  display: flex;
+  gap: 4px;
 }
 
 .color-option {

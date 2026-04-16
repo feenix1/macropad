@@ -105,7 +105,7 @@ function App() {
 }
 
 function PadButton({pads, padIndex, selected, round, onClick}: {pads: Pad[], padIndex: number, selected: boolean, round: boolean, onClick?: (padIndex: number) => void}) {
-  const className = `pad-button ${selected ? "selected" : ""} ${round ? "round" : ""}`;
+  const className = `pad-button ${selected ? "selected " : ""}${round ? "round" : ""}`;
   
   function getPad(): Pad {
     return pads[padIndex];
