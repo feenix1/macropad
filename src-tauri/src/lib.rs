@@ -2,7 +2,7 @@ use std::{vec};
 use std::sync::{Arc, Mutex};
 use launchy::mini::Message;
 use launchy::{InputDevice, InputDeviceHandler, OutputDevice};
-use tauri::{State};
+use tauri::{State, AppHandle, Emitter};
 use launchy::{launchpad_mini::{Button, Color, Input, Output}};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -30,7 +30,7 @@ impl LaunchpadState {
 }
 
 #[tauri::command]
-fn connect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
+fn connect_launchpad(app_handle: AppHandle, state: State<'_, LaunchpadState>) -> Result<(), String> {
     let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
     let mut input_guard = state.input.lock().map_err(|e| e.to_string())?;
 
@@ -40,12 +40,11 @@ fn connect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
         match message {
             Message::Press { button } => {
                 println!("Button pressed: {:?}", button);
-                output_clone.lock().unwrap().as_mut().map(|output| {
-                    output.light(button, Color::YELLOW).ok();
-                });
+                app_handle.emit("button-pressed", format!("{:?}", button)).unwrap();
             },
             Message::Release { button } => {
                 println!("Button released: {:?}", button);
+                app_handle.emit("button-released", format!("{:?}", button)).unwrap();
             },
             _ => {}
         }
@@ -86,9 +85,6 @@ fn is_connected(state: State<'_, LaunchpadState>) -> bool {
     } else {
         false
     }
-}
-
-fn input_callback(message: Message) {
 }
 
 #[tauri::command]
