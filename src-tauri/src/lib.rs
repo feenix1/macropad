@@ -2,7 +2,8 @@ use std::{vec};
 use std::sync::{Arc, Mutex};
 use launchy::mini::Message;
 use launchy::{InputDevice, InputDeviceHandler, OutputDevice};
-use tauri::{State};
+use serde::Serialize;
+use tauri::{AppHandle, Emitter, State};
 use launchy::{launchpad_mini::{Button, Color, Input, Output}};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -29,23 +30,68 @@ impl LaunchpadState {
     }
 }
 
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ControlButtonPos {
+    index: u8,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GridButtonPos {
+    x: u8,
+    y: u8,
+}
+
 #[tauri::command]
-fn connect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> {
+fn connect_launchpad(app_handle: AppHandle, state: State<'_, LaunchpadState>) -> Result<(), String> {
     let mut output_guard = state.output.lock().map_err(|e| e.to_string())?;
     let mut input_guard = state.input.lock().map_err(|e| e.to_string())?;
 
     let mut output = Output::guess().map_err(|e| e.to_string())?;
-    let output_clone = Arc::clone(&state.output);
+    // Use output clone for rust input handling later
+    // let output_clone = Arc::clone(&state.output);
     let input = Input::guess(move |message| {
         match message {
             Message::Press { button } => {
                 println!("Button pressed: {:?}", button);
-                output_clone.lock().unwrap().as_mut().map(|output| {
-                    output.light(button, Color::YELLOW).ok();
-                });
+                if button.is_top_control_button() {
+                    let _ = app_handle.emit("button-pressed", ControlButtonPos {
+                        index: button.abs_x(),
+                    });
+                }
+                else if button.is_main_grid_button() {
+                    let _ = app_handle.emit("button-pressed", GridButtonPos {
+                        x: button.abs_x(),
+                        y: button.abs_y(),
+                    });
+                }
+                else if button.is_scene_launch_button() {
+                    let _ = app_handle.emit("button-pressed", GridButtonPos {
+                        x: button.abs_x(),
+                        y: button.abs_y(),
+                    });
+                }
             },
             Message::Release { button } => {
                 println!("Button released: {:?}", button);
+                if button.is_top_control_button() {
+                    let _ = app_handle.emit("button-released", ControlButtonPos {
+                        index: button.abs_x(),
+                    });
+                }
+                else if button.is_main_grid_button() {
+                    let _ = app_handle.emit("button-released", GridButtonPos {
+                        x: button.abs_x(),
+                        y: button.abs_y(),
+                    });
+                }
+                else if button.is_scene_launch_button() {
+                    let _ = app_handle.emit("button-released", GridButtonPos {
+                        x: button.abs_x(),
+                        y: button.abs_y(),
+                    });
+                }
             },
             _ => {}
         }
