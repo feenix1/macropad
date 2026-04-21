@@ -35,6 +35,18 @@ function App() {
           }
         }
       }
+      function onControlPadPressed() {
+
+      }
+      function onControlPadReleased() {
+
+      }
+      function onGridPadPressed() {
+
+      }
+      function onGridPadReleased() {
+
+      }
     }
     connectAndHeartbeat();
   }, []);

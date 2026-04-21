@@ -1,5 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import { PadColor } from "../models/pad";
+import { ControlPosition, GridPosition, PadColor } from "../models/pad";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { useState } from "react";
 
 export interface LaunchpadConnection {
     isConnected: () => Promise<boolean>,
@@ -9,7 +11,28 @@ export interface LaunchpadConnection {
     lightGridPad: (x: number, y: number, padColor: PadColor) => Promise<boolean>,
 }
 
+export interface LaunchpadEventListeners {
+    onControlPressed: (index: number) => void,
+    onControlReleased: (index: number) => void,
+    onGridPressed: (x: number, y: number) => void,
+    onGridReleased: (x: number, y: number) => void,
+}
+
+interface ControlButtonPayload {
+    index: number,
+}
+
+interface GridButtonPayload {
+    x: number,
+    y: number,
+}
+
 export default function useLaunchpad() : LaunchpadConnection {
+    const [controlPressedUnlistener, setControlPressedUnlistener] = useState<UnlistenFn | null>(null);
+    const [controlReleasedUnlistener, setControlReleasedUnlistener] = useState<UnlistenFn | null>(null);
+    const [gridPressedUnlistener, setGridPressedUnlistener] = useState<UnlistenFn | null>(null);
+    const [gridReleasedUnlistener, setGridReleasedUnlistener] = useState<UnlistenFn | null>(null);
+
     async function isConnected() : Promise<boolean> {
         try {
             const connected: boolean = await invoke("is_connected");
@@ -40,6 +63,26 @@ export default function useLaunchpad() : LaunchpadConnection {
             return false; 
         }
         return true;
+    }
+
+    async function registerListeners(listeners: LaunchpadEventListeners) {
+        setControlPressedUnlistener(await listen<ControlButtonPayload>('control-button-pressed', (event) => {
+            listeners.onControlPressed(event.payload.index);
+        }));
+        setControlReleasedUnlistener(await listen<ControlButtonPayload>('control-button-released', (event) => {
+            listeners.onControlReleased(event.payload.index);
+        }));
+        setGridPressedUnlistener(await listen<GridButtonPayload>('grid-button-pressed', (event) => {
+            listeners.onGridPressed(event.payload.x, event.payload.y);
+        }));
+        setGridReleasedUnlistener(await listen<GridButtonPayload>('grid-button-released', (event) => {
+            listeners.onGridReleased(event.payload.x, event.payload.y);
+        }));
+    }
+
+    function deregisterListeners() {
+        controlPressedUnlistener();
+
     }
 
     async function lightControlPad(index: number, padColor: PadColor) {

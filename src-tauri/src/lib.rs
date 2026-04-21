@@ -56,7 +56,7 @@ fn connect_launchpad(app_handle: AppHandle, state: State<'_, LaunchpadState>) ->
             Message::Press { button } => {
                 println!("Button pressed: {:?}", button);
                 if button.is_top_control_button() {
-                    let _ = app_handle.emit("button-pressed", ControlButtonPos {
+                    let _ = app_handle.emit("control-button-pressed", ControlButtonPos {
                         index: button.abs_x(),
                     });
                 }
@@ -76,7 +76,7 @@ fn connect_launchpad(app_handle: AppHandle, state: State<'_, LaunchpadState>) ->
             Message::Release { button } => {
                 println!("Button released: {:?}", button);
                 if button.is_top_control_button() {
-                    let _ = app_handle.emit("button-released", ControlButtonPos {
+                    let _ = app_handle.emit("control-button-released", ControlButtonPos {
                         index: button.abs_x(),
                     });
                 }
