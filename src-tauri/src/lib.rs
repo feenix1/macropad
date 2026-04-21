@@ -134,9 +134,6 @@ fn is_connected(state: State<'_, LaunchpadState>) -> bool {
     }
 }
 
-fn input_callback(message: Message) {
-}
-
 #[tauri::command]
 fn light_grid_pad(x: u8, y: u8, color: &str, state: State<'_, LaunchpadState>) -> Result<(), String> {
     let color = string_to_color(&color).map_err(|e| e.to_string())?;
