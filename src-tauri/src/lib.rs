@@ -124,12 +124,16 @@ fn disconnect_launchpad(state: State<'_, LaunchpadState>) -> Result<(), String> 
 fn is_connected(state: State<'_, LaunchpadState>) -> bool {
     let mut output_guard = match state.output.lock() {
         Ok(guard) => guard,
-        Err(_) => return false, // If we can't acquire the lock, assume not connected
+        Err(_) => {
+            println!("Failed to acquire lock on output device state");
+            return false
+        }, // If we can't acquire the lock, assume not connected
     };
     let output = output_guard.as_mut();
     if let Some(output) = output {
         output.request_device_inquiry(launchy::s::DeviceIdQuery::Any).is_ok()
     } else {
+        println!("No output device found in state");
         false
     }
 }

@@ -9,6 +9,7 @@ export interface LaunchpadConnection {
     disconnect: () => Promise<boolean>,
     registerListeners: (listeners: LaunchpadEventListeners) => Promise<void>,
     deregisterListeners: () => void,
+    listenersRegistered: () => boolean,
     lightControlPad: (index: number, padColor: PadColor) => Promise<boolean>,
     lightGridPad: (x: number, y: number, padColor: PadColor) => Promise<boolean>,
 }
@@ -68,18 +69,30 @@ export default function useLaunchpad() : LaunchpadConnection {
     }
 
     async function registerListeners(listeners: LaunchpadEventListeners) {
+        console.log("Registering listeners...");
         setControlPressedUnlistener(await listen<ControlButtonPayload>('control-button-pressed', (event) => {
+            console.log("control pressed event recieved");
             listeners.onControlPressed(event.payload.index);
         }));
         setControlReleasedUnlistener(await listen<ControlButtonPayload>('control-button-released', (event) => {
+            console.log("control released event recieved");
             listeners.onControlReleased(event.payload.index);
         }));
-        setGridPressedUnlistener(await listen<GridButtonPayload>('grid-button-pressed', (event) => {
+        setGridPressedUnlistener(await listen<GridButtonPayload>('button-pressed', (event) => {
+            console.log("grid pressed event recieved");
             listeners.onGridPressed(event.payload.x, event.payload.y);
         }));
-        setGridReleasedUnlistener(await listen<GridButtonPayload>('grid-button-released', (event) => {
+        setGridReleasedUnlistener(await listen<GridButtonPayload>('button-released', (event) => {
+            console.log("grid released event recieved");
             listeners.onGridReleased(event.payload.x, event.payload.y);
         }));
+    }
+
+    function listenersRegistered() {
+        return controlPressedUnlistener != null &&
+        controlReleasedUnlistener != null &&
+        gridPressedUnlistener != null &&
+        gridReleasedUnlistener != null;
     }
 
     function deregisterListeners() {
@@ -127,6 +140,7 @@ export default function useLaunchpad() : LaunchpadConnection {
         disconnect,
         registerListeners,
         deregisterListeners,
+        listenersRegistered,
         lightControlPad,
         lightGridPad,
     };

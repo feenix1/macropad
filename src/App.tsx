@@ -5,6 +5,8 @@ import Pad, { padColorToCssVar, PadColor, GridPosition, ControlPosition } from "
 import { ActionType } from "./models/action-type";
 import useLaunchpad from "./hooks/useLaunchpad";
 
+let runningHeartbeat = false;
+
 function App() {
   const [controlPads, setControlPads] = useState(Array(8).fill(null).map((_, i) => new Pad(new ControlPosition(i))));
   const [gridPads, setGridPads] = useState(Array(9 * 8).fill(null).map((_, i) => new Pad(new GridPosition(i % 9, Math.floor(i / 9)))));
@@ -21,20 +23,26 @@ function App() {
 
   useEffect(() => {
     async function connectInputAndHeartbeat() {
+      if (runningHeartbeat) {
+        return;
+      }
+      runningHeartbeat = true;
+      launchpad.deregisterListeners();
+      await launchpad.registerListeners({
+        onControlPressed: onControlPadPressed,
+        onControlReleased: onControlPadReleased,
+        onGridPressed: onGridPadPressed,
+        onGridReleased: onGridPadReleased,
+      });
       while (true) {
-        const success = await launchpad.connect();
+        await launchpad.connect();
+        const success = await launchpad.isConnected();
         if (!success) {
           setIsConnected(false);
           console.warn("Failed to connect to launchpad, retrying...");
           await new Promise(resolve => setTimeout(resolve, 1000));
           continue;
         }
-        launchpad.registerListeners({
-          onControlPressed: onControlPadPressed,
-          onControlReleased: onControlPadReleased,
-          onGridPressed: onGridPadPressed,
-          onGridReleased: onGridPadReleased,
-        });
         setIsConnected(success);
         console.log("Connected to launchpad:", success);
         while (true) {
@@ -44,7 +52,7 @@ function App() {
           if (!heartbeatSuccess) {
             setIsConnected(false);
             launchpad.deregisterListeners();
-            launchpad.disconnect();
+            await launchpad.disconnect();
             console.warn("Launchpad connection lost, attempting to reconnect...");
             break;
           }
@@ -52,16 +60,13 @@ function App() {
       }
     }
     connectInputAndHeartbeat();
-    return () => {
-      launchpad.deregisterListeners();
-      launchpad.disconnect();
-    }
   }, []);
 
   // Light up pads to yellow since it breaks the pattern of 
   // two colors per shade.
   function onControlPadPressed(index: number) {
     launchpad.lightControlPad(index, PadColor.YELLOW);
+    console.log("Control pad pressed:", index);
   }
   function onControlPadReleased(index: number) {
     const pad = getControlPad(index);
