@@ -1,55 +1,79 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import "@fontsource-variable/instrument-sans/wdth.css"
-import Pad, { padColorToCssVar, PadColor, GridPosition } from "./models/pad";
+import Pad, { padColorToCssVar, PadColor, GridPosition, ControlPosition } from "./models/pad";
 import { ActionType } from "./models/action-type";
 import useLaunchpad from "./hooks/useLaunchpad";
 
 function App() {
+  const [controlPads, setControlPads] = useState(Array(8).fill(null).map((_, i) => new Pad(new ControlPosition(i))));
   const [gridPads, setGridPads] = useState(Array(9 * 8).fill(null).map((_, i) => new Pad(new GridPosition(i % 9, Math.floor(i / 9)))));
   const [selectedPadIndex, setSelectedPadIndex] = useState<number | null>(null);
   const launchpad = useLaunchpad();
   const [isConnected, setIsConnected] = useState(false);
 
+  function getControlPad(index: number): Pad {
+    return controlPads[index];
+  }
+  function getGridPad(x: number, y: number): Pad {
+    return gridPads[y * 9 + x];
+  }
+
   useEffect(() => {
-    async function connectAndHeartbeat() {
+    async function connectInputAndHeartbeat() {
       while (true) {
         const success = await launchpad.connect();
         if (!success) {
           setIsConnected(false);
-          console.warn("Failed to connect to launchpad, retrying in 5 seconds...");
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          console.warn("Failed to connect to launchpad, retrying...");
+          await new Promise(resolve => setTimeout(resolve, 1000));
           continue;
         }
-        console.log("Connected to launchpad:", success);
+        launchpad.registerListeners({
+          onControlPressed: onControlPadPressed,
+          onControlReleased: onControlPadReleased,
+          onGridPressed: onGridPadPressed,
+          onGridReleased: onGridPadReleased,
+        });
         setIsConnected(success);
+        console.log("Connected to launchpad:", success);
         while (true) {
           const heartbeatSuccess = await launchpad.isConnected();
           console.log("Launchpad connected poll:", heartbeatSuccess);
           await new Promise(resolve => setTimeout(resolve, 1000));
           if (!heartbeatSuccess) {
             setIsConnected(false);
+            launchpad.deregisterListeners();
             launchpad.disconnect();
             console.warn("Launchpad connection lost, attempting to reconnect...");
             break;
           }
         }
       }
-      function onControlPadPressed() {
-
-      }
-      function onControlPadReleased() {
-
-      }
-      function onGridPadPressed() {
-
-      }
-      function onGridPadReleased() {
-
-      }
     }
-    connectAndHeartbeat();
+    connectInputAndHeartbeat();
+    return () => {
+      launchpad.deregisterListeners();
+      launchpad.disconnect();
+    }
   }, []);
+
+  // Light up pads to yellow since it breaks the pattern of 
+  // two colors per shade.
+  function onControlPadPressed(index: number) {
+    launchpad.lightControlPad(index, PadColor.YELLOW);
+  }
+  function onControlPadReleased(index: number) {
+    const pad = getControlPad(index);
+    launchpad.lightControlPad(index, pad.color);
+  }
+  function onGridPadPressed(x: number, y: number) {
+    launchpad.lightGridPad(x, y, PadColor.YELLOW);
+  }
+  function onGridPadReleased(x: number, y: number) {
+    const pad = getGridPad(x, y);
+    launchpad.lightGridPad(x, y, pad.color);
+  }
 
   useEffect(() => {
     async function updatePadLights() {
@@ -174,6 +198,9 @@ function ConfigurePanel({selectedPad, onConfigUpdate}: {selectedPad: Pad | null,
             <div className="color-options">
               {
                 Object.values(PadColor).map((color) => {
+                  if (color === PadColor.YELLOW) {
+                    return null; // Don't allow user to select yellow since it's used for pressed state
+                  }
                   return <ColorOption key={color} color={color} selected={selectedPad.color == color} onClick={() => onConfigUpdate({...selectedPad, color: color})} />
                 })
               }

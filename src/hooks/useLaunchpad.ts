@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { ControlPosition, GridPosition, PadColor } from "../models/pad";
+import { PadColor } from "../models/pad";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useState } from "react";
 
@@ -7,6 +7,8 @@ export interface LaunchpadConnection {
     isConnected: () => Promise<boolean>,
     connect: () => Promise<boolean>,
     disconnect: () => Promise<boolean>,
+    registerListeners: (listeners: LaunchpadEventListeners) => Promise<void>,
+    deregisterListeners: () => void,
     lightControlPad: (index: number, padColor: PadColor) => Promise<boolean>,
     lightGridPad: (x: number, y: number, padColor: PadColor) => Promise<boolean>,
 }
@@ -81,8 +83,22 @@ export default function useLaunchpad() : LaunchpadConnection {
     }
 
     function deregisterListeners() {
-        controlPressedUnlistener();
-
+        if (controlPressedUnlistener != null) {
+            controlPressedUnlistener();
+            setControlPressedUnlistener(null);
+        }
+        if (controlReleasedUnlistener != null) {
+            controlReleasedUnlistener();
+            setControlReleasedUnlistener(null);
+        }
+        if (gridPressedUnlistener != null) {
+            gridPressedUnlistener();
+            setGridPressedUnlistener(null);
+        }
+        if (gridReleasedUnlistener != null) {
+            gridReleasedUnlistener();
+            setGridReleasedUnlistener(null);
+        }
     }
 
     async function lightControlPad(index: number, padColor: PadColor) {
@@ -109,6 +125,8 @@ export default function useLaunchpad() : LaunchpadConnection {
         isConnected,
         connect,
         disconnect,
+        registerListeners,
+        deregisterListeners,
         lightControlPad,
         lightGridPad,
     };
