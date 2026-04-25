@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import "@fontsource-variable/instrument-sans/wdth.css"
 import Pad, { padColorToCssVar, PadColor, GridPosition, ControlPosition } from "./models/pad";
 import { ActionType } from "./models/action-type";
 import useLaunchpad from "./hooks/useLaunchpad";
-
-let runningHeartbeat = false;
 
 function App() {
   const [controlPads, setControlPads] = useState(Array(8).fill(null).map((_, i) => new Pad(new ControlPosition(i))));
@@ -14,27 +12,18 @@ function App() {
   const launchpad = useLaunchpad();
   const [isConnected, setIsConnected] = useState(false);
 
-  function getControlPad(index: number): Pad {
-    return controlPads[index];
-  }
-  function getGridPad(x: number, y: number): Pad {
-    return gridPads[y * 9 + x];
-  }
 
   useEffect(() => {
+    let cancelled = false;
+
     async function connectInputAndHeartbeat() {
-      if (runningHeartbeat) {
-        return;
-      }
-      runningHeartbeat = true;
-      launchpad.deregisterListeners();
       await launchpad.registerListeners({
         onControlPressed: onControlPadPressed,
         onControlReleased: onControlPadReleased,
         onGridPressed: onGridPadPressed,
         onGridReleased: onGridPadReleased,
       });
-      while (true) {
+      while (!cancelled) {
         await launchpad.connect();
         const success = await launchpad.isConnected();
         if (!success) {
@@ -43,12 +32,11 @@ function App() {
           await new Promise(resolve => setTimeout(resolve, 1000));
           continue;
         }
-        setIsConnected(success);
-        console.log("Connected to launchpad:", success);
-        while (true) {
+        setIsConnected(true);
+        console.log("Connected to launchpad, starting heartbeat...");
+        while (!cancelled) {
           const heartbeatSuccess = await launchpad.isConnected();
           console.log("Launchpad connected poll:", heartbeatSuccess);
-          await new Promise(resolve => setTimeout(resolve, 1000));
           if (!heartbeatSuccess) {
             setIsConnected(false);
             launchpad.deregisterListeners();
@@ -56,12 +44,36 @@ function App() {
             console.warn("Launchpad connection lost, attempting to reconnect...");
             break;
           }
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
     }
     connectInputAndHeartbeat();
+    return () => {      
+      cancelled = true;
+      launchpad.deregisterListeners();
+      launchpad.disconnect();
+    }
   }, []);
 
+  // Need to use refs to get the latest pad states in event callbacks,
+  // since they only have access to the state at the time they were registered.
+  // Even though the function that gets the pads is outside the callbacks!!
+  const controlPadsRef = useRef(controlPads);
+  const gridPadsRef = useRef(gridPads);
+  useEffect(() => {
+    controlPadsRef.current = controlPads;
+  }, [controlPads]);
+  useEffect(() => {
+    gridPadsRef.current = gridPads;
+  }, [gridPads]);
+  function getControlPad(index: number): Pad {
+    return controlPadsRef.current[index];
+  }
+  function getGridPad(x: number, y: number): Pad {
+    console.log("getPad", gridPads);
+    return gridPadsRef.current[y * 9 + x];
+  }
   // Light up pads to yellow since it breaks the pattern of 
   // two colors per shade.
   function onControlPadPressed(index: number) {
@@ -93,6 +105,7 @@ function App() {
     }
     if (isConnected) {
       updatePadLights();
+      console.log("updateLights", gridPads);
     }
   }, [gridPads, isConnected]);
 
@@ -108,6 +121,7 @@ function App() {
     const newPads = [...gridPads];
     newPads[selectedPadIndex] = newPad;
     setGridPads(newPads);
+    console.log("updatePad", gridPads)
   }
 
   function getSelectedPad() : Pad | null {

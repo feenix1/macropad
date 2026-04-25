@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { PadColor } from "../models/pad";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export interface LaunchpadConnection {
     isConnected: () => Promise<boolean>,
@@ -31,15 +31,12 @@ interface GridButtonPayload {
 }
 
 export default function useLaunchpad() : LaunchpadConnection {
-    const [controlPressedUnlistener, setControlPressedUnlistener] = useState<UnlistenFn | null>(null);
-    const [controlReleasedUnlistener, setControlReleasedUnlistener] = useState<UnlistenFn | null>(null);
-    const [gridPressedUnlistener, setGridPressedUnlistener] = useState<UnlistenFn | null>(null);
-    const [gridReleasedUnlistener, setGridReleasedUnlistener] = useState<UnlistenFn | null>(null);
+    const unlisteners = useRef<UnlistenFn[]>([]);
+    const cancelled = useRef(false);
 
     async function isConnected() : Promise<boolean> {
         try {
             const connected: boolean = await invoke("is_connected");
-            console.log("isConnected: " + connected);
             return connected;
             
         } catch (error) {
@@ -70,48 +67,39 @@ export default function useLaunchpad() : LaunchpadConnection {
 
     async function registerListeners(listeners: LaunchpadEventListeners) {
         console.log("Registering listeners...");
-        setControlPressedUnlistener(await listen<ControlButtonPayload>('control-button-pressed', (event) => {
-            console.log("control pressed event recieved");
-            listeners.onControlPressed(event.payload.index);
-        }));
-        setControlReleasedUnlistener(await listen<ControlButtonPayload>('control-button-released', (event) => {
-            console.log("control released event recieved");
-            listeners.onControlReleased(event.payload.index);
-        }));
-        setGridPressedUnlistener(await listen<GridButtonPayload>('button-pressed', (event) => {
-            console.log("grid pressed event recieved");
-            listeners.onGridPressed(event.payload.x, event.payload.y);
-        }));
-        setGridReleasedUnlistener(await listen<GridButtonPayload>('button-released', (event) => {
-            console.log("grid released event recieved");
-            listeners.onGridReleased(event.payload.x, event.payload.y);
-        }));
+        cancelled.current = false;
+
+        const unlistens  = await Promise.all([
+            listen<ControlButtonPayload>('control-button-pressed', (event) => {
+                listeners.onControlPressed(event.payload.index);
+            }),
+            listen<ControlButtonPayload>('control-button-released', (event) => {
+                listeners.onControlReleased(event.payload.index);
+            }),
+            listen<GridButtonPayload>('button-pressed', (event) => {
+                listeners.onGridPressed(event.payload.x, event.payload.y);
+            }),
+            listen<GridButtonPayload>('button-released', (event) => {
+                listeners.onGridReleased(event.payload.x, event.payload.y);
+            }),
+        ]); 
+
+        if (cancelled.current) {
+            unlistens.forEach((unlisten) => unlisten());
+            return;
+        }
+
+        unlisteners.current = unlistens;
     }
 
     function listenersRegistered() {
-        return controlPressedUnlistener != null &&
-        controlReleasedUnlistener != null &&
-        gridPressedUnlistener != null &&
-        gridReleasedUnlistener != null;
+        return unlisteners.current.length == 4;
     }
 
     function deregisterListeners() {
-        if (controlPressedUnlistener != null) {
-            controlPressedUnlistener();
-            setControlPressedUnlistener(null);
-        }
-        if (controlReleasedUnlistener != null) {
-            controlReleasedUnlistener();
-            setControlReleasedUnlistener(null);
-        }
-        if (gridPressedUnlistener != null) {
-            gridPressedUnlistener();
-            setGridPressedUnlistener(null);
-        }
-        if (gridReleasedUnlistener != null) {
-            gridReleasedUnlistener();
-            setGridReleasedUnlistener(null);
-        }
+        cancelled.current = true;
+        unlisteners.current.forEach((unlisten) => unlisten());
+        unlisteners.current = [];
     }
 
     async function lightControlPad(index: number, padColor: PadColor) {

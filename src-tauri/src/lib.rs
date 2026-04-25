@@ -63,13 +63,14 @@ fn connect_launchpad(app_handle: AppHandle, state: State<'_, LaunchpadState>) ->
                 else if button.is_main_grid_button() {
                     let _ = app_handle.emit("button-pressed", GridButtonPos {
                         x: button.abs_x(),
-                        y: button.abs_y(),
+                        // Adjust y to have origin at top-left of main grid instead of control buttons
+                        y: button.abs_y() - 1,
                     });
                 }
                 else if button.is_scene_launch_button() {
                     let _ = app_handle.emit("button-pressed", GridButtonPos {
                         x: button.abs_x(),
-                        y: button.abs_y(),
+                        y: button.abs_y() - 1,
                     });
                 }
             },
@@ -83,13 +84,13 @@ fn connect_launchpad(app_handle: AppHandle, state: State<'_, LaunchpadState>) ->
                 else if button.is_main_grid_button() {
                     let _ = app_handle.emit("button-released", GridButtonPos {
                         x: button.abs_x(),
-                        y: button.abs_y(),
+                        y: button.abs_y() - 1,
                     });
                 }
                 else if button.is_scene_launch_button() {
                     let _ = app_handle.emit("button-released", GridButtonPos {
                         x: button.abs_x(),
-                        y: button.abs_y(),
+                        y: button.abs_y() - 1,
                     });
                 }
             },
