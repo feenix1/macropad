@@ -44,7 +44,7 @@ function App() {
             console.warn("Launchpad connection lost, attempting to reconnect...");
             break;
           }
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
     }
@@ -147,6 +147,11 @@ function App() {
           </p>
         </div>
         <div className="pad-container">
+          {/* {
+            controlPads.map((_, i) => {
+              return <PadButton key={i} pads={controlPads} padIndex={i} selected={false} round={true} />
+            })
+          } */}
           {
             gridPads.map((_, i) => {
               return <PadButton key={i} pads={gridPads} padIndex={i} selected={i === selectedPadIndex} round={i % 9 == 8} onClick={handlePadSelect} />
@@ -192,6 +197,10 @@ function ConfigurePanel({selectedPad, onConfigUpdate}: {selectedPad: Pad | null,
   }
   function handleKeybindDown(e: React.KeyboardEvent<HTMLInputElement>) {
     e.preventDefault();
+    if (selectedPad) {
+      const newPad: Pad = {...selectedPad};
+      onConfigUpdate(newPad);
+    }
   }
   return (
     <div className="configure-panel">
@@ -226,8 +235,13 @@ function ConfigurePanel({selectedPad, onConfigUpdate}: {selectedPad: Pad | null,
             </div>
           </div>
           <div>
-            <p>Keybind</p>
-            <input type="text" name="keybind" id="keybind" onKeyDown={handleKeybindDown} />
+            {
+              selectedPad.actionType == ActionType.Keybind &&
+              <>
+                <p>Keybind</p>
+                <input type="text" name="keybind" id="keybind" onKeyDown={handleKeybindDown} />
+              </>
+            }
           </div>
         </>
         : <p>No pad selected</p>

@@ -3,13 +3,32 @@ import { ActionType } from "./action-type";
 export default class Pad {
     color: PadColor
     position: GridPosition | ControlPosition
-    selected = false
     label: string = ""
     actionType: ActionType = ActionType.None
-    
+    action: Action | null = null;
+
     constructor(position: GridPosition | ControlPosition) {
         this.color = PadColor.OFF;
         this.position = position;
+    }
+}
+
+export interface Action {
+    onPress: () => void;
+    onRelease: () => void;
+}
+
+export class KeybindAction implements Action {
+    public onPress() {
+
+
+    }
+    public onRelease() {
+
+    }
+
+    constructor(keybind: string) {
+
     }
 }
 
