@@ -1,7 +1,8 @@
-# Tauri + React + Typescript
+# Macropad
+Have a Novation launchpad lying around? Not sure what to do with it? Use it as a macropad!
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+# Motivations
+A while back, I bought a Novation Launchpad Mini MK2 to make some music with it. The pads ended up not being consistent enough for my liking, but I still wanted to find a use for it. I was inspired by the Elgato Streamdeck to repurpose the Launchpad as a similar tool, and macropad was born.
 
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+# Progress
+This is still under early development, and many features are still a work in progress.
